@@ -3,6 +3,9 @@
 # Copy this to ~/.config/sway/config and edit it to your liking.
 #
 # Read `man 5 sway` for a complete reference.
+#
+# Known dependencies: grim, swaybg, swaylock, foot, bemenu,
+#    brightnessctl, slurp, jq, pipewire
 
 ### Variables
 #
@@ -16,12 +19,17 @@ set $right l
 # Your preferred terminal emulator
 set $term foot
 # Your preferred application launcher
-set $menu tofi-run
+set $menu bemenu-run --cw 1 -H 23
+# Your preferred wallpaper and lock screen
+# set $wallpaper /usr/share/backgrounds/linuxmint-wilma/kwinegeart_road.jpg
+# Screen lock command
+# set $lock swaylock -i $wallpaper 
+set $lock swaylock -c d2d5d8
 
 ### Output configuration
 #
 # Default wallpaper (more resolutions are available in /usr/share/backgrounds/sway/)
-output * bg ~/Pictures/dolomite-clouds.png fill
+# output * bg $wallpaper fill
 #
 # Example configuration:
 #
@@ -68,6 +76,9 @@ output * bg ~/Pictures/dolomite-clouds.png fill
 
     # Start your launcher
     bindsym $mod+d exec $menu
+
+    # Lock the screen
+    bindsym $mod+Alt+l exec $lock
 
     # Drag floating windows by holding down $mod and left mouse button.
     # Resize them with right mouse button + $mod.
@@ -201,11 +212,15 @@ bindsym $mod+r mode "resize"
     bindsym --locked XF86AudioLowerVolume exec pactl set-sink-volume @DEFAULT_SINK@ -5%
     bindsym --locked XF86AudioRaiseVolume exec pactl set-sink-volume @DEFAULT_SINK@ +5%
     bindsym --locked XF86AudioMicMute exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
+
     # Special keys to adjust brightness via brightnessctl
-    bindsym --locked XF86MonBrightnessDown exec brightnessctl set 5%-
-    bindsym --locked XF86MonBrightnessUp exec brightnessctl set 5%+
+    bindsym --locked XF86MonBrightnessDown exec brightnessctl set 10%-
+    bindsym --locked XF86MonBrightnessUp exec brightnessctl set 10%+
+
     # Special key to take a screenshot with grim
-    bindsym Print exec grim
+    bindsym Print exec grim - - | tee ~/Pictures/screenshots/$(date +%m%d%y-%H%M%S).png | wl-copy
+    # Special key to select an area to screenshot 
+    bindsym Shift+Print exec slurp | grim -g - - | tee ~/Pictures/screenshots/$(date +%m%d%y-%H%M%S).png| wl-copy
 
 #
 # Status Bar:
@@ -227,7 +242,27 @@ bar {
 
 include /etc/sway/config.d/*
 
-#My additions
-gaps inner 10
-gaps outer 5
+# My additions
+
+# Start Pipewire on startup
 exec pipewire
+
+# Navigate workspaces with 3-finger swipes on a touchpad
+bindgesture swipe:right workspace next
+bindgesture swipe:left workspace prev
+
+# Navigate workspaces with keybindings
+bindsym $mod+Ctrl+$right workspace next
+bindsym $mod+Ctrl+$left workspace prev
+bindsym $mod+Ctrl+Right workspace next
+bindsym $mod+Ctrl+Left workspace prev
+
+# Caps lock functions as escape unless shift is held
+input "type:keyboard" {
+        xkb_options caps:escape_shifted_capslock
+}
+
+# Enable tap to click on the touchpad
+input "type:touchpad" {
+        tap enabled
+}
